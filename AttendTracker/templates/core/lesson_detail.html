@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ lesson.topic }}</h1>
+    <p class="lead">{{ lesson.date|date:"d M Y H:i" }}</p>
+    
+    <!-- Таблица студентов -->
+    <div class="card shadow mt-4">
+        <div class="card-header bg-success text-white">
+            <h5>Посещаемость и оценки</h5>
+        </div>
+        <div class="card-body">
+            {% if is_teacher %}
+            <!-- Версия для преподавателя -->
+            <form method="post">
+                {% csrf_token %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Студент</th>
+                            <th>Присутствие</th>
+                            <th>Оценка</th>
+                            <th>Комментарий</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in students_data %}
+                        <tr>
+                            <td>{{ data.student.username }}</td>
+                            <td>{{ data.attendance_form.is_present }}</td>
+                            <td>{{ data.grade_form.value }}</td>
+                            <td>{{ data.grade_form.comment }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="submit" class="btn btn-success">Сохранить</button>
+            </form>
+
+            {% else %}
+            <!-- Версия для студента -->
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Студент</th>
+                            <th>Присутствие</th>
+                            <th>Оценка</th>
+                            <th>Комментарий</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in students_data %}
+                        <tr>
+                            <td>{{ data.student.username }}</td>
+                            <td>
+                                {% if data.is_present %}
+                                <i class="bi bi-check-circle text-success"></i>
+                                {% else %}
+                                <i class="bi bi-x-circle text-danger"></i>
+                                {% endif %}
+                            </td>
+                            <td>{{ data.grade_value|default:"-" }}</td>
+                            <td>{{ data.comment|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

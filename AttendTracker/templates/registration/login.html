@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">🔐 Вход в систему</h3>
+            </div>
+            
+            <div class="card-body">
+                <form method="post" class="mt-3">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Войти
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-3 text-center">
+                    <a href="{% url 'password_reset' %}" class="text-decoration-none">
+                        Забыли пароль?
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card-footer text-muted text-center">
+                Нет аккаунта? <a href="{% url 'signup' %}">Зарегистрируйтесь</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

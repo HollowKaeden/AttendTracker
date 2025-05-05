@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ course.title }}</h1>
+    <p class="lead">{{ course.description }}</p>
+    
+    <div class="row">
+        <!-- Форма создания урока -->
+        {% if user == course.teacher %}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5>Новое занятие</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ lesson_form|crispy }}
+                        <button type="submit" class="btn btn-primary mt-3">
+                            Создать занятие
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Список уроков -->
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5>Список занятий</h5>
+                </div>
+                <div class="card-body">
+                    {% if lessons %}
+                    <div class="list-group">
+                        {% for lesson in lessons %}
+                        <a href="{% url 'lesson_detail' lesson.pk %}" 
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6>{{ lesson.topic }}</h6>
+                                    <small class="text-muted">
+                                        {{ lesson.date|date:"d M Y H:i" }}
+                                    </small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill" 
+                                      style="min-width: 110px; 
+                                             display: inline-flex; 
+                                             align-items: center; 
+                                             justify-content: center;
+                                             padding: 0.5em 1em;">
+                                    {% with count=lesson.attendance_set.count %}
+                                        {{ count }}
+                                        {% if count|divisibleby:10 and count >= 11 and count <= 14 %}
+                                            студентов
+                                        {% else %}
+                                            {% if count|add:"0" == 1 %}студент
+                                            {% elif count|add:"0" >= 2 and count|add:"0" <= 4 %}студента
+                                            {% else %}студентов
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endwith %}
+                                </span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        Занятий пока нет
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

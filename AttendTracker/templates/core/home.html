@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="jumbotron mt-5">
+        <h1 class="display-4">Добро пожаловать в AttendTracker! 📚</h1>
+        <p class="lead">Ваш цифровой помощник в управлении успеваемостью и посещаемостью</p>
+        <hr class="my-4">
+        
+        {% if user.is_authenticated %}
+            <div class="alert alert-success" role="alert">
+                Вы вошли как 
+                {% if user.role == 'teacher' %}
+                    👨🏫 Преподаватель
+                {% else %}
+                    🎓 Студент
+                {% endif %}
+                <strong>{{ user.get_full_name }}</strong>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg">
+                Перейти в личный кабинет →
+            </a>
+        {% else %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Новый пользователь?</h5>
+                            <p class="card-text">Зарегистрируйтесь чтобы получить доступ ко всем возможностям</p>
+                            <a href="{% url 'signup' %}" class="btn btn-success">Регистрация</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Уже зарегистрированы?</h5>
+                            <p class="card-text">Войдите в систему чтобы продолжить работу</p>
+                            <a href="{% url 'login' %}" class="btn btn-primary">Вход</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">👋 Добро пожаловать, {{ user.username }}!</h2>
+    
+    <div class="row">
+        <!-- Для преподавателей -->
+        {% if user.role == 'teacher' %}
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5>Ваши курсы</h5>
+                </div>
+                <div class="card-body">
+                    {% if courses %}
+                    <div class="list-group">
+                        {% for course in courses %}
+                        <a href="{% url 'course_detail' course.id %}" 
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <span>{{ course.title }}</span>
+                                <small>{{ course.students.count }} студентов</small>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        У вас пока нет активных курсов
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5>Ближайшие занятия</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_lessons %}
+                    <div class="list-group">
+                        {% for lesson in recent_lessons %}
+                        <a href="{% url 'lesson_detail' lesson.pk %}" class="list-group-item list-group-item-action">
+                            <small class="text-muted">{{ lesson.date|date:"d M H:i" }}</small>
+                            <div>{{ lesson.topic }}</div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        Нет запланированных занятий
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Для студентов -->
+        {% elif user.role == 'student' %}
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5>Ваши курсы</h5>
+                </div>
+                <div class="card-body">
+                    {% if courses %}
+                    <div class="list-group">
+                        {% for course in courses %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6>{{ course.title }}</h6>
+                                    <small class="text-muted">
+                                        Преподаватель: {{ course.teacher.username }}
+                                    </small>
+                                </div>
+                                <a href="{% url 'course_detail' course.id %}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    Подробнее
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        Вы пока не записаны на курсы
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h5>Статистика</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="display-4">{{ attendance_stats }}</div>
+                            <small class="text-muted">Посещенных занятий</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="display-4">
+                                {% if total_lessons > 0 %}
+                                    {% widthratio attendance_stats total_lessons 100 %}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">Общая посещаемость</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
