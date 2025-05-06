@@ -5,8 +5,9 @@ from django.urls import reverse_lazy
 from django.shortcuts import redirect
 from django.http.response import HttpResponseForbidden
 from django.utils.timezone import make_aware
-from .forms import SignUpForm, LessonForm, AttendanceForm, GradeForm
+from django.db.models import Avg
 from .models import Course, Lesson, Attendance, Grade
+from .forms import SignUpForm, LessonForm, AttendanceForm, GradeForm
 import datetime
 
 
@@ -165,3 +166,48 @@ class LessonDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
         messages.success(request, "Изменения успешно сохранены!")
         return redirect('lesson_detail', pk=lesson.pk)
+
+
+class CourseSummaryView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    model = Course
+    template_name = 'core/course_summary.html'
+    context_object_name = 'course'
+
+    def test_func(self):
+        course = self.get_object()
+        return (self.request.user == course.teacher or
+                self.request.user in course.students.all())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        course = self.get_object()
+
+        if self.request.user == course.teacher:
+            # Данные для преподавателя
+            context['total_students'] = course.students.count()
+            context['average_attendance'] = Attendance.objects.filter(
+                lesson__course=course
+            ).aggregate(avg=Avg('is_present'))['avg'] or 0
+
+            context['average_grade'] = Grade.objects.filter(
+                lesson__course=course
+            ).aggregate(avg=Avg('value'))['avg'] or 0
+
+        else:
+            # Данные для студента
+            context['attended_lessons'] = Attendance.objects.filter(
+                student=self.request.user,
+                is_present=True,
+                lesson__course=course
+            ).count()
+
+            context['total_lessons'] = (Lesson.objects
+                                        .filter(course=course)
+                                        .count())
+
+            context['student_grades'] = Grade.objects.filter(
+                student=self.request.user,
+                lesson__course=course
+            ).order_by('-lesson__date')
+
+        return context

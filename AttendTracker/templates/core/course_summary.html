@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Сводка курса: {{ course.title }}</h1>
+        <a href="{% url 'course_detail' course.id %}" class="btn btn-secondary">
+            ← К списку занятий
+        </a>
+    </div>
+
+    {% if user == course.teacher %}
+    <!-- Версия для преподавателя -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5>Основная статистика</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-6">Всего студентов:</dt>
+                        <dd class="col-6">{{ total_students }}</dd>
+                        
+                        <dt class="col-6">Средняя посещаемость:</dt>
+                        <dd class="col-6">{{ average_attendance|floatformat:1 }}%</dd>
+                        
+                        <dt class="col-6">Средняя оценка:</dt>
+                        <dd class="col-6">{{ average_grade|floatformat:1 }}/100</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5>Последние оценки</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Студент</th>
+                                <th>Последняя оценка</th>
+                                <th>Дата</th>
+                                <th>Комментарий</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in course.students.all %}
+                            <tr>
+                                <td>{{ student.username }}</td>
+                                <td>
+                                    {% with grade=student.grade_set.last %}
+                                        {{ grade.value|default:"-" }}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% with grade=student.grade_set.last %}
+                                        {{ grade.lesson.date|date:"d M"|default:"-" }}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% with grade=student.grade_set.last %}
+                                        {{ grade.comment|truncatechars:20|default:"-" }}
+                                    {% endwith %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Версия для студента -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5>Ваша статистика</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-6">Посещено занятий:</dt>
+                        <dd class="col-6">{{ attended_lessons }} из {{ total_lessons }}</dd>
+                        
+                        <dt class="col-6">Процент посещаемости:</dt>
+                        <dd class="col-6">
+                            {% if total_lessons > 0 %}
+                                {% widthratio attended_lessons total_lessons 100 %}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h5>История оценок</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Тема занятия</th>
+                                <th>Оценка</th>
+                                <th>Комментарий</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for grade in student_grades %}
+                            <tr>
+                                <td>{{ grade.lesson.date|date:"d M" }}</td>
+                                <td>{{ grade.lesson.topic|truncatechars:20 }}</td>
+                                <td>{{ grade.value }}</td>
+                                <td>{{ grade.comment|truncatechars:30|default:"-" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">Оценок пока нет</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

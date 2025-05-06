@@ -38,4 +38,4 @@ class Grade(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     value = models.IntegerField(default=0)
-    comment = models.TextField(blank=True, null=True)
+    comment = models.TextField(blank=True, null=True, default='-')
