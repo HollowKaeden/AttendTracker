@@ -3,6 +3,12 @@
 
 {% block content %}
 <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{% url 'course_detail' lesson.course.id %}" class="btn btn-secondary">
+            ← Вернуться к курсу
+        </a>
+        <div></div> <!-- Для выравнивания -->
+    </div>
     <h1>{{ lesson.topic }}</h1>
     <p class="lead">{{ lesson.date|date:"d M Y H:i" }}</p>
     
@@ -38,6 +44,16 @@
                 </table>
                 <button type="submit" class="btn btn-success">Сохранить</button>
             </form>
+            {% if messages %}
+            <div class="mt-3">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
             {% else %}
             <!-- Версия для студента -->

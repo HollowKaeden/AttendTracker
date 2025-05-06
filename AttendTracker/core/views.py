@@ -1,10 +1,12 @@
 from django.views.generic import CreateView, DetailView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from .forms import SignUpForm, LessonForm, AttendanceForm, GradeForm
-from .models import Course, Lesson, Attendance, Grade
+from django.contrib import messages
 from django.urls import reverse_lazy
 from django.shortcuts import redirect
 from django.http.response import HttpResponseForbidden
+from django.utils.timezone import make_aware
+from .forms import SignUpForm, LessonForm, AttendanceForm, GradeForm
+from .models import Course, Lesson, Attendance, Grade
 import datetime
 
 
@@ -23,7 +25,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         if user.role == 'teacher':
             context['courses'] = user.courses_taught.all()
-            today = datetime.datetime.today()
+            today = make_aware(datetime.datetime.today())
             context['recent_lessons'] = Lesson.objects.filter(
                 course__teacher=user
             ).filter(date__gte=today).order_by('-date')[:5]
@@ -161,4 +163,5 @@ class LessonDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
             if form.is_valid():
                 form.save()
 
+        messages.success(request, "Изменения успешно сохранены!")
         return redirect('lesson_detail', pk=lesson.pk)
