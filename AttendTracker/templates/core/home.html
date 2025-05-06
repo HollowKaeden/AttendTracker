@@ -11,9 +11,9 @@
             <div class="alert alert-success" role="alert">
                 Вы вошли как 
                 {% if user.role == 'teacher' %}
-                    👨🏫 Преподаватель
+                    преподаватель
                 {% else %}
-                    🎓 Студент
+                    студент
                 {% endif %}
                 <strong>{{ user.get_full_name }}</strong>
             </div>

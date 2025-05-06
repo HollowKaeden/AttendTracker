@@ -6,7 +6,7 @@
     <div class="col-md-8">
         <div class="card shadow">
             <div class="card-header bg-success text-white">
-                <h3 class="mb-0">🚀 Регистрация</h3>
+                <h3 class="mb-0">Регистрация</h3>
             </div>
             
             <div class="card-body">
@@ -29,29 +29,6 @@
                         </div>
                         <div class="col-md-6">
                             {{ form.password2|as_crispy_field }}
-                        </div>
-                    </div>
-                    
-                    <!-- Поле выбора роли -->
-                    <div class="mb-4">
-                        <label class="form-label">Выберите роль*</label>
-                        <div class="btn-group-vertical w-100" role="group">
-                            {% for value, text in form.role.field.choices %}
-                                <input type="radio" 
-                                       class="btn-check" 
-                                       name="role" 
-                                       id="role_{{ forloop.counter }}" 
-                                       value="{{ value }}" 
-                                       required
-                                       {% if form.role.value == value %}checked{% endif %}>
-                                <label class="btn btn-outline-primary text-start" for="role_{{ forloop.counter }}">
-                                    {% if value == 'teacher' %}
-                                        👨🏫 Преподаватель
-                                    {% else %}
-                                        🎓 Студент
-                                    {% endif %}
-                                </label>
-                            {% endfor %}
                         </div>
                     </div>
 

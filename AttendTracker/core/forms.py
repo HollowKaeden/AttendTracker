@@ -4,17 +4,23 @@ from .models import User, Lesson, Attendance, Grade
 
 
 class SignUpForm(UserCreationForm):
-    role = forms.ChoiceField(choices=User.ROLES)
-
     class Meta:
         model = User
-        fields = ('username', 'email', 'role', 'password1', 'password2')
+        fields = ('username', 'email', 'password1', 'password2')
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.role = 'student'  # Устанавливаем роль по умолчанию
+        if commit:
+            user.save()
+        return user
 
 
 class LessonForm(forms.ModelForm):
     date = forms.DateTimeField(
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        input_formats=['%Y-%m-%dT%H:%M']
+        input_formats=['%Y-%m-%dT%H:%M'],
+        label='Дата'
     )
 
     class Meta:

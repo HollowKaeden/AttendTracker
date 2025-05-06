@@ -1,11 +1,10 @@
 from django.views.generic import CreateView, DetailView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.shortcuts import redirect
 from django.http.response import HttpResponseForbidden
 from django.utils.timezone import make_aware
-from django.db.models import Avg
 from .models import Course, Lesson, Attendance, Grade
 from .forms import SignUpForm, LessonForm, AttendanceForm, GradeForm
 import datetime
@@ -29,7 +28,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             today = make_aware(datetime.datetime.today())
             context['recent_lessons'] = Lesson.objects.filter(
                 course__teacher=user
-            ).filter(date__gte=today).order_by('-date')[:5]
+            ).filter(date__gte=today).order_by('date')[:5]
 
         elif user.role == 'student':
             context['courses'] = user.courses_enrolled.all()
@@ -164,8 +163,12 @@ class LessonDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
             if form.is_valid():
                 form.save()
 
+        redirect_url = reverse('lesson_detail', kwargs={'pk': lesson.pk})
+        if request.GET.get('from') == 'summary':
+            redirect_url += '?from=summary'
+
         messages.success(request, "Изменения успешно сохранены!")
-        return redirect('lesson_detail', pk=lesson.pk)
+        return redirect(redirect_url)
 
 
 class CourseSummaryView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
@@ -184,30 +187,74 @@ class CourseSummaryView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
         if self.request.user == course.teacher:
             # Данные для преподавателя
-            context['total_students'] = course.students.count()
-            context['average_attendance'] = Attendance.objects.filter(
-                lesson__course=course
-            ).aggregate(avg=Avg('is_present'))['avg'] or 0
+            lessons = course.lesson_set.all().order_by('date')
+            students = course.students.all().prefetch_related(
+                'attendance_set',
+                'grade_set'
+            )
 
-            context['average_grade'] = Grade.objects.filter(
-                lesson__course=course
-            ).aggregate(avg=Avg('value'))['avg'] or 0
+            student_data = []
+            for student in students:
+                attendances = {
+                    a.lesson_id: a.is_present
+                    for a in student.attendance_set.filter(lesson__in=lessons)
+                }
+                grades = {
+                    g.lesson_id: g.value
+                    for g in student.grade_set.filter(lesson__in=lessons)
+                }
+
+                total_lessons = lessons.count()
+                attended = sum(attendances.values())
+                total_grade = sum(grades.values())
+
+                student_data.append({
+                    'student': student,
+                    'lessons_data': [
+                        {
+                            'attended': attendances.get(lesson.id, False),
+                            'grade': grades.get(lesson.id, 0)
+                        } for lesson in lessons
+                    ],
+                    'total_attended': attended,
+                    'attendance_percent': ((attended / total_lessons * 100)
+                                           if total_lessons > 0 else 0),
+                    'total_grade': total_grade
+                })
+
+            context.update({
+                'lessons': lessons,
+                'student_data': student_data,
+                'total_lessons': lessons.count()
+            })
 
         else:
             # Данные для студента
-            context['attended_lessons'] = Attendance.objects.filter(
-                student=self.request.user,
-                is_present=True,
-                lesson__course=course
-            ).count()
+            lessons = course.lesson_set.all().order_by('date')
+            attendances = {
+                a.lesson_id: a.is_present
+                for a in (self.request.user
+                          .attendance_set.filter(lesson__in=lessons))
+            }
+            grades = {
+                g.lesson_id: g.value
+                for g in self.request.user.grade_set.filter(lesson__in=lessons)
+            }
 
-            context['total_lessons'] = (Lesson.objects
-                                        .filter(course=course)
-                                        .count())
+            # Вычисление статистики
+            total_lessons = lessons.count()
+            attended_lessons = sum(attendances.values())
+            total_grade = sum(grades.values())
 
-            context['student_grades'] = Grade.objects.filter(
-                student=self.request.user,
-                lesson__course=course
-            ).order_by('-lesson__date')
+            context.update({
+                'lessons_data': [{
+                    'lesson': lesson,
+                    'attended': attendances.get(lesson.id, False),
+                    'grade': grades.get(lesson.id, 0)
+                } for lesson in lessons],
+                'attended_lessons': attended_lessons,
+                'total_lessons': total_lessons,
+                'total_grade': total_grade
+            })
 
         return context

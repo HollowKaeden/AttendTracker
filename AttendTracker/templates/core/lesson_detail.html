@@ -3,11 +3,17 @@
 
 {% block content %}
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{% url 'course_detail' lesson.course.id %}" class="btn btn-secondary">
-            ← Вернуться к курсу
-        </a>
-        <div></div> <!-- Для выравнивания -->
+    <div class="mb-4">
+        <div class="d-flex gap-2">
+            {% if request.GET.from == 'summary' %}
+            <a href="{% url 'course_summary' lesson.course.id %}" class="btn btn-info">
+                ← Вернуться к таблице
+            </a>
+            {% endif %}
+            <a href="{% url 'course_detail' lesson.course.id %}" class="btn btn-secondary">
+                ← Вернуться к курсу
+            </a>
+        </div>
     </div>
     <h1>{{ lesson.topic }}</h1>
     <p class="lead">{{ lesson.date|date:"d M Y H:i" }}</p>
