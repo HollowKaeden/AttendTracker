@@ -58,6 +58,7 @@ class CourseDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     def test_func(self):
         course = self.get_object()
         return (self.request.user == course.teacher or
+                self.request.user in course.students.all() or
                 self.request.user.is_superuser)
 
     def get_context_data(self, **kwargs):
@@ -93,6 +94,7 @@ class LessonDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     def test_func(self):
         lesson = self.get_object()
         return (self.request.user == lesson.course.teacher or
+                self.request.user in lesson.course.students.all() or
                 self.request.user.is_superuser)
 
     def get_context_data(self, **kwargs):

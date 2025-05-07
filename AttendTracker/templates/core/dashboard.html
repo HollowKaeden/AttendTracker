@@ -21,7 +21,19 @@
                            class="list-group-item list-group-item-action">
                             <div class="d-flex justify-content-between">
                                 <span>{{ course.title }}</span>
-                                <small>{{ course.students.count }} студентов</small>
+                                <small>
+                                    {% with count=course.students.count %}
+                                        {{ count }}
+                                        {% if count|divisibleby:10 and count >= 11 and count <= 14 %}
+                                            студентов
+                                        {% else %}
+                                            {% if count|add:"0" == 1 %}студент
+                                            {% elif count|add:"0" >= 2 and count|add:"0" <= 4 %}студента
+                                            {% else %}студентов
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endwith %}
+                                </small>
                             </div>
                         </a>
                         {% endfor %}
