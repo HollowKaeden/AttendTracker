@@ -27,7 +27,7 @@ SECRET_KEY = ('django-insecure-twpgq+@-&)h5twycrlepyxskd='
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['attendtracker-django.onrender.com']
 
 
 # Application definition
