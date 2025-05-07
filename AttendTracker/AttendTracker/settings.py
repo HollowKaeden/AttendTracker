@@ -89,8 +89,7 @@ DATABASES = {
         'NAME': 'attend_tracker',
         'USER': 'bless_nt',
         'PASSWORD': '93RrDdyynwQLGkM3uhlnXqLx9ZTcOpbU',
-        'HOST': 'postgresql://bless_nt:93RrDdyynwQLGkM3uhlnXqLx'
-                '9ZTcOpbU@dpg-d0da0oeuk2gs73bkpnv0-a/attend_tracker',
+        'HOST': 'dpg-d0da0oeuk2gs73bkpnv0-a.oregon-postgres.render.com',
         'PORT': '5432'
     }
 }
